@@ -53,21 +53,22 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
 	    
 	    EditorGUILayout.BeginHorizontal();
 	    {
-		if(GUILayout.Button("↑", EditorStyles.miniButton)){ 
+		DrawSimpleLabelField(listName + " Node", "", null);
+		if(GUILayout.Button("↑", EditorStyles.miniButtonLeft)){ 
 		    if(idx > 0){
 			list.RemoveAt(idx); 
 			list.Insert(idx-1, node);
 			EditorUtility.SetDirty(so);
 		    }
 		}
-		if(GUILayout.Button("↓", EditorStyles.miniButton)){ 
+		if(GUILayout.Button("↓", EditorStyles.miniButtonMid)){ 
 		    if(idx < (list.Count - 1)){
 			list.RemoveAt(idx); 
 			list.Insert(idx+1, node);
 			EditorUtility.SetDirty(so);
 		    }
 		}
-		if(GUILayout.Button("Remove", EditorStyles.miniButton)){ 
+		if(GUILayout.Button("Remove", EditorStyles.miniButtonRight)){ 
 		    list.RemoveAt(idx); 
 		    --idx;
 		    EditorUtility.SetDirty(so);
@@ -76,12 +77,19 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
 	    EditorGUILayout.EndHorizontal();
 	    
 	    GUILayout.Space(5);	
+
+	    EditorGUILayout.BeginHorizontal();
+	    GUILayout.Space(EditorGUI.indentLevel * 15);
 	    GUILayout.Box(GUIContent.none, HrStyle.EditorLine, GUILayout.ExpandWidth(true), GUILayout.Height(1f));
+	    EditorGUILayout.EndHorizontal();
 	    GUILayout.Space(5);	    
 	}
 
 	EditorGUILayout.BeginHorizontal();
 	{
+	    if(listName != ""){
+                DrawSimpleLabelField(listName, "", null);
+	    }
 	    if(GUILayout.Button("Add", EditorStyles.miniButton)){		
 		list.Add(new NodeT());
 		EditorUtility.SetDirty(so);
@@ -92,6 +100,8 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
 			AssetDatabase.SaveAssets();
 			EditorUtility.DisplayDialog("Inspector :: Save", "Save Success.", "OK"); 
 		    });
+		m_isTermPollCallbackQueue = false;
+                EditorApplication.delayCall += PollCallbackQueue;
 	    }
 	}
 	EditorGUILayout.EndHorizontal();		
@@ -100,6 +110,38 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
     /*=================================================================================================*/
 
     /*
+     * @sample
+     * if(flag = Foldout(flag, "label")){}
+     */
+    protected virtual bool Foldout(bool display, string title)
+    {
+	
+        var style           = new GUIStyle("ShurikenModuleTitle");
+        style.font          = new GUIStyle(EditorStyles.label).font;
+        style.border        = new RectOffset(15, 7, 4, 4);
+        style.fixedHeight   = 22;
+        style.contentOffset = new Vector2(20f, -2f);
+
+        var rect = GUILayoutUtility.GetRect(16f, 22f, style);
+        GUI.Box(rect, title, style);
+
+        var e = Event.current;
+
+        var toggleRect = new Rect(rect.x + 4f, rect.y + 2f, 13f, 13f);
+        if (e.type == EventType.Repaint){
+            EditorStyles.foldout.Draw(toggleRect, false, false, display, false);
+        }
+
+        if (e.type == EventType.MouseDown && rect.Contains(e.mousePosition)){	    
+            display = !display;
+            e.Use();
+        }
+
+        return display;
+    }
+
+    /*=================================================================================================*/
+
     protected virtual void DrawInvokeBt(Func<Task> func){
 
 	DrawSimpleLabelField("Invoke Menu");
@@ -118,7 +160,6 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
 	EditorGUILayout.EndHorizontal();
 	GUILayout.Space(5);	
     }
-    */
     
     protected void DrawSimpleLabelField(string label, string value = "",
 					GUIStyle style = null, float defaultLabelWidth = 80f)
