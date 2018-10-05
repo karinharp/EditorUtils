@@ -44,7 +44,7 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
 
     protected virtual void DrawListNode<NodeT>(NodeT node){}
     
-    protected virtual void DrawList<NodeT>(T so, List<NodeT> list) where NodeT : new(){
+    protected virtual void DrawList<NodeT>(T so, List<NodeT> list, string listName = "") where NodeT : new(){
 	
 	for(int idx = 0; idx < list.Count; ++idx){
 	    var node = list[idx];
