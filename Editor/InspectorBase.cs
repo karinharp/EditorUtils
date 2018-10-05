@@ -28,7 +28,7 @@ public class InspectorBase<T> : Editor where T : ScriptableObject
     protected virtual void DrawCustomInspector(){ DrawDefaultInspector(); }    
     public override void OnInspectorGUI(){ DrawCustomInspector(); }
 
-    void PollCallbackQueue(){
+    protected void PollCallbackQueue(){
 	while(m_callbackQueue.Count > 0){ (m_callbackQueue.Pop())(); }
 	if(! m_isTermPollCallbackQueue){ EditorApplication.delayCall += PollCallbackQueue; }
     }
